@@ -1,0 +1,18 @@
+{
+  "verbose": true,
+  "moduleFileExtensions": [
+    "ts",
+    "tsx",
+    "js"
+  ],
+  "moduleNameMapper": {
+    "\\.(css|scss|less)$": "identity-obj-proxy"
+  },
+  "transform": {
+    "^.+\\.(ts|tsx)$": "ts-jest"
+  },
+  "testMatch": [
+    "**/*.test.(ts|tsx|js)",
+    "**/__tests__/*.+(ts|tsx|js)"
+  ]
+}
