@@ -5,6 +5,9 @@
     "tsx",
     "js"
   ],
+  "setupFiles": [
+    "<rootDir>/setupTest.tsx"
+  ],
   "moduleNameMapper": {
     "\\.(css|scss|less)$": "identity-obj-proxy"
   },

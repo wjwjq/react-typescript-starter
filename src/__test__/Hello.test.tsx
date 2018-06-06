@@ -1,8 +1,5 @@
 import * as React from 'react';
 import * as enzyme from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
-
-enzyme.configure({ adapter: new Adapter() });
 
 import Hello from '../components/Hello';
 
