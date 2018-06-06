@@ -40,8 +40,6 @@ if (process.env.NODE_ENV !== 'production') {
   );
 }
 
-
-
 const store = createStore(appReducer, middlewares);
 
 export default store;
