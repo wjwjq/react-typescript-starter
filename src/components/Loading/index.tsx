@@ -7,7 +7,7 @@ export default function Loading(props: any) {
     return <div>Error! <button onClick={props.retry}>Retry</button></div>;
   } else if (props.timedOut) {
     return <div>Taking a long time... <button onClick={props.retry}>Retry</button></div>;
-  } else if (props.pastDelay) {
+  } else {
     return (
       <div className={styles.loading}>
         <div className={styles.loadingInner}>
@@ -16,7 +16,5 @@ export default function Loading(props: any) {
         </div>
       </div>
     );
-  } else {
-    return null;
   }
 }
