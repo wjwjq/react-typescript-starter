@@ -7,7 +7,7 @@ import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'react-router-redux';
 import store, { history } from './redux/store/index';
 
-import Routes from './Routes/index';
+import Routes from './routes/index';
 import './assets/styles/index.less';
 
 const rootEl = document.getElementById('root');
@@ -27,7 +27,7 @@ render(
 declare let module: { hot: any };
 
 if (module.hot) {
-  module.hot.accept('./Routes/index', () => {
+  module.hot.accept('./routes/index', () => {
     render(
       <AppContainer>
         <Provider store={store}>

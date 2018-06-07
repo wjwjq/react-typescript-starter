@@ -1,9 +1,14 @@
-
 import * as React from 'react';
-import { BrowserRouter, Route, Switch, Router } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
+import Loadable from 'react-loadable';
+import PageLoading from '../Components/Loading';
 
 import App from '../views/App';
-import Foo from '../views/Foo';
+
+const Foo = Loadable({
+  loader:  () => import(/* webpackChunkName: Foo */ '../views/Foo'),
+  loading: PageLoading
+});
 
 const Routes = () => {
   return (
