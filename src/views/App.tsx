@@ -1,41 +1,83 @@
-/// <reference path='../index.d.ts'/>
+/// <reference path="../index.d.ts" />
 
 import * as React from 'react';
+import CSSModules from 'react-css-modules';
 import { Link } from 'react-router-dom';
-
-import Button from 'antd/lib/button';
-import 'antd/lib/button/style/css';
-
-import Hello from './Hello';
-import * as imgSrc2 from '../assets/images/test2.jpg';
+import { Layout, Menu, Icon } from 'antd';
+const { Header, Sider, Content } = Layout;
 
 import * as styles from './App.css';
+import * as logoSrc from '../assets/images/logo.png';
 
-export default function App() {
-  return (
-    <div className={styles.container}>
-      <div>
-        <h3>router</h3>
-        <Link to="/foo"> foo</Link>
-      </div>
+import Hello from './Hello';
 
-      <div>
-        <h3>antd</h3>
-        <Button type="primary">Test</Button>
-        <h3>iconfont</h3>
-        <i className="icon-shizhong" />
-      </div>
+@CSSModules(styles, {
+  allowMultiple: true
+})
+export default class App extends React.Component {
 
-      <div>
-        <h3>redux</h3>
-        <Hello />
-      </div>
+  state = {
+    collapsed: false
+  };
 
-      <div>
-        <h3>img</h3>
-        <img src={imgSrc2} />
-      </div>
+  toggle = () => {
+    this.setState({
+      collapsed: !this.state.collapsed
+    });
+  }
 
-    </div>
-  );
+  render() {
+    return (
+      <Layout styleName="main-layout" >
+
+        <Sider
+          trigger={null}
+          collapsible={true}
+          collapsed={this.state.collapsed}
+        >
+          <div styleName="logo">
+            <img src={logoSrc} alt="logo" />
+            <span>XX管理系统</span>
+          </div>
+
+          <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
+            <Menu.Item key="1">
+              <Icon type="user" />
+              <span>用户管理</span>
+            </Menu.Item>
+            <Menu.Item key="2">
+              <Icon type="video-camera" />
+              <span>商品管理</span>
+            </Menu.Item>
+            <Menu.Item key="2">
+              <Link to="/foo">
+                <Icon type="video-camera" />
+                <span>测试路由</span>
+              </Link>
+            </Menu.Item>
+          </Menu>
+
+        </Sider>
+
+        <Layout>
+
+          <Header styleName="header">
+            <Icon
+              className={styles.trigger}
+              type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
+              onClick={this.toggle}
+            />
+          </Header>
+
+          <Content styleName="content">
+            <div style={{ height: 1000 }}>
+              <Hello />
+            </div>
+          </Content>
+
+        </Layout>
+
+      </Layout>
+    );
+  }
 }

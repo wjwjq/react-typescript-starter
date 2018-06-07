@@ -1,4 +1,6 @@
 import * as React from 'react';
+import CSSModules from 'react-css-modules';
+
 import * as styles from './Hello.less';
 
 export interface Props {
@@ -14,19 +16,19 @@ function Hello({ name, enthusiasmLevel = 1, onIncrement, onDecrement }: Props) {
   }
 
   return (
-    <div className={styles.hello}>
+    <div styleName="hello">
       <div className="greeting">
         Hello {name + getExclamationMarks(enthusiasmLevel)}
       </div>
       <div>
-        <button className={styles.button} onClick={onDecrement}>-</button>
-        <button className={styles.button} onClick={onIncrement}>+</button>
+        <button styleName="button" onClick={onDecrement}>-</button>
+        <button styleName="button" onClick={onIncrement}>+</button>
       </div>
     </div>
   );
 }
 
-export default Hello;
+export default CSSModules(Hello, styles);
 
 // helpers
 
