@@ -27,7 +27,7 @@ const FAVICON_PATH = path.resolve(IMAGES_PATH, "favicon.ico"); //favicon目录
 
 const ASSETS_SUB_PATH = "static"; //静态资源目录 image css js fonts etc..
 
-const PUBLIC_PATH = 'test/'; //静态资源引用路径
+const PUBLIC_PATH = 'manage/'; //静态资源引用路径
 
 const PROXY_URI = "http://localhost:3000"; //反向代理地址
 
