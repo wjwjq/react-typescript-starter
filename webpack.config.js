@@ -87,7 +87,7 @@ const commonConfig = {
             options: {
               getCustomTransformers: () => ({
                 before: [ tsImportPluginFactory({
-                  libraryDirectory: 'es',
+                  libraryDirectory: 'lib',
                   libraryName: 'antd',
                   style: 'css'
                 })]
