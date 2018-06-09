@@ -10,6 +10,7 @@ const tsImportPluginFactory = require('ts-import-plugin'); //antd 按需加载
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 const isProduction = process.argv.find(item => ~item.indexOf("--mode")).split("=").pop().toLowerCase() === "production";
+const fallBackStyleLoader = isProduction ?   MiniCssExtractPlugin.loader : 'style-loader'
 
 const ROOT_PATH = path.resolve(__dirname);
 const APP_PATH = path.resolve(ROOT_PATH, "src");
@@ -28,9 +29,9 @@ const FAVICON_PATH = path.resolve(IMAGES_PATH, "favicon.ico"); //favicon目录
 
 const ASSETS_SUB_PATH = "static"; //静态资源目录 image css js fonts etc..
 
-const PUBLIC_PATH = '/'; //静态资源引用路径
+const PUBLIC_PATH = 'manage/'; //静态资源引用路径
 
-const PROXY_URI = "http://localhost:3000"; //反向代理地址
+const PROXY_URI = "http://manage.shop.com:3000"; //反向代理地址
 
 //抽离打包的模块 使用CDN加载
 const externals = [{
@@ -86,7 +87,7 @@ const commonConfig = {
           {
             loader: "awesome-typescript-loader",
             options: {
-              useCache: true,
+              useCache: false,
               useBable: false,
               getCustomTransformers: () => ({
                 before: [ tsImportPluginFactory({
@@ -107,7 +108,7 @@ const commonConfig = {
         test: /\.css$/,
         exclude: /node_modules/,
         use: [
-            isProduction ?   MiniCssExtractPlugin.loader : 'style-loader',
+            fallBackStyleLoader,
             {
               loader: 'typings-for-css-modules-loader',
               options: {
@@ -126,7 +127,7 @@ const commonConfig = {
         test: /\.less$/,
         exclude: /node_modules/,
         use: [
-            isProduction ?   MiniCssExtractPlugin.loader : 'style-loader',
+            fallBackStyleLoader,
             {
               loader: 'typings-for-css-modules-loader',
               options: {
@@ -145,12 +146,12 @@ const commonConfig = {
       {
         test: /\.css$/,
         include: /node_modules/,
-        use: [isProduction ?   MiniCssExtractPlugin.loader : 'style-loader', 'css-loader', 'postcss-loader']
+        use: [fallBackStyleLoader, 'css-loader', 'postcss-loader']
       },
       {
         test: /\.less$/,
         include: /node_modules/,
-        use: [isProduction ?   MiniCssExtractPlugin.loader : 'style-loader', 'css-loader', 'postcss-loader', 'less-loader']
+        use: [fallBackStyleLoader, 'css-loader', 'postcss-loader', 'less-loader']
       },
       {
         test: /\.(png|jpg|gif|jpeg|svg)$/,
@@ -183,7 +184,8 @@ const commonConfig = {
 
   //插件
   plugins: [
-    // new webpack.ProvidePlugin({}),
+    new webpack.ProvidePlugin({}),
+
     new CleanWebpackPlugin([BUILD_PATH]),
 
     new webpack.HashedModuleIdsPlugin(),
@@ -249,8 +251,6 @@ module.exports = merge(commonConfig, isProduction ? {
 
     //CSS文件单独打包
     new MiniCssExtractPlugin({
-      // Options similar to the same options in webpackOptions.output
-      // both options are optional
       filename: `${ASSETS_SUB_PATH}/css/[name].[hash:5].css`,
       chunkFilename: `${ASSETS_SUB_PATH}/css/'[name].[hash].css`
     }),

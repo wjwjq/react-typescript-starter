@@ -41,7 +41,7 @@ async function networkCall(axiosPromise: AxiosPromise) {
     const response = await axiosPromise;
     resData = await response.data;
     const { status } = resData;
-    
+
     if (+status === 200) { // 请求成功
       return await resData.data;
     } else if (+status === 403) { // 验证失败
@@ -54,7 +54,7 @@ async function networkCall(axiosPromise: AxiosPromise) {
         reason: resData.reason
       });
     }
-    
+
   } catch (error) { // 请求异常  status !== 200
     globalAxiosErrorHandler(Object.assign({}, error.response.data, {
       method: error.config.method
@@ -92,10 +92,16 @@ function dateFormat(date: string | Date) {
     'S': date.getMilliseconds() // 毫秒
   };
   let fmt = 'yyyy-MM-dd hh:mm:ss';
-  if (/(y+)/.test(fmt)) { fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length)); }
-  for (const k in o) {
-    if (new RegExp(k).test(fmt)) { fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length))); }
+  if (/(y+)/.test(fmt)) {
+    fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
   }
+
+  for (const k in o) {
+    if (new RegExp(k).test(fmt)) {
+      fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length)));
+    }
+  }
+
   return fmt;
 }
 
