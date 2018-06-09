@@ -2,11 +2,12 @@ const path = require("path");
 const webpack = require("webpack");
 const merge = require("webpack-merge");
 const CleanWebpackPlugin = require("clean-webpack-plugin"); //在每次build之前，清空dist目录及其子目录
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin"); //生成index.html
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin; //包大小分析
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin'); //生成external
 const tsImportPluginFactory = require('ts-import-plugin'); //antd 按需加载
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 const isProduction = process.argv.find(item => ~item.indexOf("--mode")).split("=").pop().toLowerCase() === "production";
 
@@ -85,13 +86,18 @@ const commonConfig = {
           {
             loader: "awesome-typescript-loader",
             options: {
+              useCache: true,
+              useBable: false,
               getCustomTransformers: () => ({
                 before: [ tsImportPluginFactory({
                   libraryDirectory: 'lib',
                   libraryName: 'antd',
                   style: 'css'
                 })]
-              })
+              }),
+              compilerOptions: {
+                module: 'ESNext'
+              }
             }
           }, 
           "tslint-loader"
@@ -100,24 +106,8 @@ const commonConfig = {
       {
         test: /\.css$/,
         exclude: /node_modules/,
-        use: isProduction
-          ? ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: [{
-              loader: 'typings-for-css-modules-loader',
-              options: {
-                importLoaders: 1,
-                modules: true,
-                camelCase: true,
-                namedExport: true,
-                localIdentName: '[name]__[local]--[hash:base64:5]',
-                sourceMap: false
-              }
-            },
-              'postcss-loader']
-          })
-          : [
-            'style-loader',
+        use: [
+            isProduction ?   MiniCssExtractPlugin.loader : 'style-loader',
             {
               loader: 'typings-for-css-modules-loader',
               options: {
@@ -135,25 +125,8 @@ const commonConfig = {
       {
         test: /\.less$/,
         exclude: /node_modules/,
-        use: isProduction
-          ? ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: [{
-              loader: 'typings-for-css-modules-loader',
-              options: {
-                importLoaders: 1,
-                modules: true,
-                camelCase: true,
-                namedExport: true,
-                localIdentName: '[name]__[local]--[hash:base64:5]',
-                sourceMap: false
-              }
-            },
-              'postcss-loader',
-              'less-loader']
-          })
-          : [
-            'style-loader',
+        use: [
+            isProduction ?   MiniCssExtractPlugin.loader : 'style-loader',
             {
               loader: 'typings-for-css-modules-loader',
               options: {
@@ -172,34 +145,12 @@ const commonConfig = {
       {
         test: /\.css$/,
         include: /node_modules/,
-        use: isProduction
-          ? ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: [{
-              loader: 'css-loader',
-              options: {
-                localIdentName: '[name]__[local]--[hash:base64:5]',
-                sourceMap: false
-              }
-            }, 'postcss-loader']
-          })
-          : ['style-loader', 'css-loader', 'postcss-loader']
+        use: [isProduction ?   MiniCssExtractPlugin.loader : 'style-loader', 'css-loader', 'postcss-loader']
       },
       {
         test: /\.less$/,
         include: /node_modules/,
-        use: isProduction
-          ? ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-            use: [{
-              loader: 'css-loader',
-              options: {
-                localIdentName: '[name]__[local]--[hash:base64:5]',
-                sourceMap: false
-              }
-            }, 'postcss-loader', 'less-loader']
-          })
-          : ['style-loader', 'css-loader', 'postcss-loader', 'less-loader']
+        use: [isProduction ?   MiniCssExtractPlugin.loader : 'style-loader', 'css-loader', 'postcss-loader', 'less-loader']
       },
       {
         test: /\.(png|jpg|gif|jpeg|svg)$/,
@@ -232,7 +183,7 @@ const commonConfig = {
 
   //插件
   plugins: [
-    new webpack.ProvidePlugin({}),
+    // new webpack.ProvidePlugin({}),
     new CleanWebpackPlugin([BUILD_PATH]),
 
     new webpack.HashedModuleIdsPlugin(),
@@ -246,7 +197,6 @@ const commonConfig = {
       inject: true
     }),
 
-    new webpack.LoaderOptionsPlugin({ options: {} })
   ]
 }
 
@@ -260,14 +210,31 @@ module.exports = merge(commonConfig, isProduction ? {
 
   //文件压缩
   optimization: {
+    minimizer: [
+      new UglifyJSPlugin({
+        sourceMap: false,
+        uglifyOptions: {
+          compress: {
+            inline: false
+          }
+        }
+      })
+    ],
     splitChunks: {
-      chunks: "all",
-      name: "commons"
+      cacheGroups: {
+        default: false,
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'commons',
+          chunks: 'all',
+          minChunks: 2 
+        }
+      }
     },
-    runtimeChunk: {
-      name: "runtime"
-    },
-    minimize: true
+    runtimeChunk: false,
+    // runtimeChunk: {
+    //   name: "runtime"
+    // }
   },
 
 
@@ -278,14 +245,14 @@ module.exports = merge(commonConfig, isProduction ? {
 
   //插件项
   plugins: [
-    new HtmlWebpackExternalsPlugin({
-      externals
-    }),
+    new webpack.optimize.ModuleConcatenationPlugin(),
 
     //CSS文件单独打包
-    new ExtractTextPlugin({
+    new MiniCssExtractPlugin({
+      // Options similar to the same options in webpackOptions.output
+      // both options are optional
       filename: `${ASSETS_SUB_PATH}/css/[name].[hash:5].css`,
-      allChunks: true
+      chunkFilename: `${ASSETS_SUB_PATH}/css/'[name].[hash].css`
     }),
 
     //加载器最小化
@@ -295,6 +262,10 @@ module.exports = merge(commonConfig, isProduction ? {
       debug: false
     }),
 
+     new HtmlWebpackExternalsPlugin({
+      externals
+    }),
+
     //生成文件顶部加入注释
     new webpack.BannerPlugin({
       banner: "This file is created by Stephen Wu, " + new Date(),
@@ -302,7 +273,11 @@ module.exports = merge(commonConfig, isProduction ? {
       entryOnly: true
     }),
 
-    // new BundleAnalyzerPlugin()
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      reportFilename: `${BUILD_PATH}/bundle.report.html`,
+      openAnalyzer: false
+    })
   ]
 
 } : {
