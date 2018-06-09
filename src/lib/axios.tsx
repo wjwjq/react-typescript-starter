@@ -1,6 +1,6 @@
 import axios, { AxiosPromise } from 'axios';
 
-interface IPostedData {
+export interface IPostedData {
   data?: any;
   [propName: string]: any;
 }
@@ -36,29 +36,46 @@ async function all(axiosPromiseArray: Array<Promise<any>>) {
 }
 
 async function networkCall(axiosPromise: AxiosPromise) {
-  let resData = null;
   try {
     const response = await axiosPromise;
-    resData = await response.data;
+    const resData = await response.data;
     const { status } = resData;
-
     if (+status === 200) { // 请求成功
-      return await resData.data;
+      return resData.data;
     } else if (+status === 403) { // 验证失败
       // store.dispatch({
       //   type: AUTH_FAIL
       // });
     } else { // 请求失败
+      console.error('request fail -> status: ', status);
       return Promise.reject({
         status,
-        reason: resData.reason
+        message: resData.message
       });
     }
-
   } catch (error) { // 请求异常  status !== 200
     globalAxiosErrorHandler(Object.assign({}, error.response.data, {
       method: error.config.method
     }));
+  }
+}
+
+function judgePostedData(method: TMethod, postedData: IPostedData) {
+  if (method === 'DELETE' || method === 'GET') {
+    return {
+      method,
+      params: postedData
+    };
+  } else {
+    return 'data' in postedData
+      ? {
+        method,
+        ...postedData
+      }
+      : {
+        method,
+        data: postedData
+      };
   }
 }
 
@@ -95,33 +112,12 @@ function dateFormat(date: string | Date) {
   if (/(y+)/.test(fmt)) {
     fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
   }
-
   for (const k in o) {
     if (new RegExp(k).test(fmt)) {
       fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length)));
     }
   }
-
   return fmt;
-}
-
-function judgePostedData(method: TMethod, postedData: IPostedData) {
-  if (method === 'DELETE' || method === 'GET') {
-    return {
-      method,
-      params: postedData
-    };
-  } else {
-    return 'data' in postedData
-      ? {
-        method,
-        ...postedData
-      }
-      : {
-        method,
-        data: postedData
-      };
-  }
 }
 
 export default {

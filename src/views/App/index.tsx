@@ -37,22 +37,20 @@ export default class App extends React.Component {
         >
           <div styleName="logo">
             <img src={logoSrc} alt="logo" />
-            <span>XX管理系统</span>
+            <span>react-typescript starter</span>
           </div>
 
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             <Menu.Item key="1">
-              <Icon type="user" />
-              <span>用户管理</span>
+              <Link to="/hello">
+                <Icon type="user" />
+                <span>Redux Sync</span>
+              </Link>
             </Menu.Item>
             <Menu.Item key="2">
-              <Icon type="video-camera" />
-              <span>商品管理</span>
-            </Menu.Item>
-            <Menu.Item key="3">
               <Link to="/foo">
                 <Icon type="video-camera" />
-                <span>测试路由</span>
+                <span>Redux Async</span>
               </Link>
             </Menu.Item>
           </Menu>
@@ -71,7 +69,7 @@ export default class App extends React.Component {
 
           <Content styleName="content">
             <div style={{ height: 1000 }}>
-              <Hello />
+              {this.props.children}
             </div>
           </Content>
 

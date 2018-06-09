@@ -22,7 +22,7 @@ declare let window: { __REDUX_DEVTOOLS_EXTENSION__: any };
 declare let process: any;
 
 let middlewares;
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV === 'development') {
   middlewares = compose(
     applyMiddleware(
       historyMiddleware,
