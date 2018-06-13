@@ -2,48 +2,30 @@ import * as React from 'react';
 import { Button } from 'antd';
 import { bindActionCreators } from 'redux';
 import { connect, Dispatch } from 'react-redux';
-import { Table } from 'antd';
-import { ColumnProps } from 'antd/lib/table';
 
-import * as actions from '../redux/actions/foo';
-import * as FooTypes from '../redux/types/foo';
-
-interface IState {
-  foo: FooTypes.IStoreState;
-}
+import * as actions from '../store/foo/actions';
+import * as FooTypes from '../store/foo/types';
+import { ApplicationState } from '../store/reducer';
 
 interface IOwnProps {
-  users: FooTypes.TUsers;
+  loading: boolean;
+  fail: boolean;
+  success: boolean;
+  users?: FooTypes.TUsers;
 }
 
 interface IDispatchProps {
-  fetchUser(action: any): void;
+  fetchUser(action: any): any;
 }
 
 interface IOwnState {
   aaa: string;
 }
 
-const columns: Array<ColumnProps<FooTypes.IUser>> = [{
-  title: 'Name',
-  dataIndex: 'name',
-  key: 'name'
-}, {
-  title: 'Age',
-  dataIndex: 'age',
-  key: 'age'
-}, {
-  title: 'Address',
-  dataIndex: 'address',
-  key: 'address'
-}];
+const mapStateToProps = ({ foo }: ApplicationState): IOwnProps => ({ ...foo });
 
-const mapStateToProps = ({ foo: { users } }: IState, ownProps: IOwnProps): IOwnProps => ({
-  users: users!
-});
-
-const mapDispatchToProps = (dispatch: Dispatch<FooTypes.FetchUserActions>): IDispatchProps => bindActionCreators({
-  fetchUser: actions.fetchUser
+const mapDispatchToProps = (dispatch: Dispatch<FooTypes.TFooActions>): IDispatchProps => bindActionCreators({
+  fetchUser: actions.fetchUserAsync
 }, dispatch);
 
 class Foo extends React.Component<IOwnProps & IDispatchProps, IOwnState> {
@@ -58,14 +40,28 @@ class Foo extends React.Component<IOwnProps & IDispatchProps, IOwnState> {
 
   public render() {
     const { users } = this.props;
+    const { aaa } = this.state;
 
     return (
       <div>
-        <Table columns={columns} dataSource={users} bordered={true} rowKey="_id" />
-        <Button onClick={this.fetch} style={{ marginTop: 15 }}>加载</Button>
+        {aaa}
+        {renderUsers(users!)}
+        <Button onClick={this.fetch} >加载</Button>
       </div>
     );
   }
+}
+
+function renderUsers(users: FooTypes.TUsers): React.ReactNodeArray {
+  return users.map((user: FooTypes.IUser) => {
+    return (
+      <li key={user._id || user.id}>
+        <span>{user.name}</span>
+        <span>{user.age}</span>
+        <span>{user.address}</span>
+      </li>
+    );
+  });
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Foo);

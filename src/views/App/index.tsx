@@ -37,7 +37,7 @@ export default class App extends React.Component {
         >
           <div styleName="logo">
             <img src={logoSrc} alt="logo" />
-            <span>react-typescript</span>
+            <span>XX管理系统</span>
           </div>
 
           <Nav />
