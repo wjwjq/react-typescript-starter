@@ -1,7 +1,7 @@
 import { Action, ActionCreator } from 'redux';
 import { ThunkAction } from 'redux-thunk';
 
-import { Dispatch } from 'react-redux';
+import { ApplicationState } from '../reducer';
 
 import * as Types from './types';
 import { user as UserApi } from '../../lib/api';
@@ -34,8 +34,13 @@ const fetchUserFulfilled: ActionCreator<Types.IFetchUserFulfilled> = (users: Typ
   }
 });
 
-export const fetchUserAsync: ActionCreator<ThunkAction<Promise<Action>, Types.IFooState, {}, Types.TFooActions>> = () => {
-  return async (dispatch: Dispatch<Types.TFooActions>): Promise<Action> => {
+export const fetchUserAsync: ActionCreator<ThunkAction<Promise<Action>, ApplicationState, {}, Types.TFooActions>> = () => {
+  return async (dispatch, getState): Promise<Action> => {
+
+    const { foo: { loading }, hello: { languageName } } = getState();
+
+    console.log(loading, languageName);
+
     try {
       dispatch(fetchUserLoading());
       const res = await UserApi.get();
