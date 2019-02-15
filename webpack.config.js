@@ -8,6 +8,8 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin'); //生成external
 const tsImportPluginFactory = require('ts-import-plugin'); //antd 按需加载
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const ImageminPlugin = require("imagemin-webpack-plugin").default;
+const imageminMozjpeg = require("imagemin-mozjpeg");
 
 const isProduction = process.argv.find(item => ~item.indexOf("--mode")).split("=").pop().toLowerCase() === "production";
 const fallBackStyleLoader = isProduction ?   MiniCssExtractPlugin.loader : 'style-loader'
@@ -265,6 +267,36 @@ module.exports = merge(commonConfig, isProduction ? {
      new HtmlWebpackExternalsPlugin({
       externals
     }),
+    
+     // 图片自动压缩
+        new ImageminPlugin({
+          test: /\.(jpe?g|png|gif|svg)$/i,
+          optipng: {
+            optimizationLevel: 7
+          },
+          pngquant: {
+            quality: "65-90",
+            speed: 4
+          },
+          gifsicle: {
+            optimizationLevel: 3
+          },
+          svgo: {
+            plugins: [{
+              removeViewBox: false,
+              removeEmptyAttrs: true
+            }]
+          },
+          jpegtran: {
+            progressive: true
+          },
+          plugins: [
+            imageminMozjpeg({
+              quality: 65,
+              progressive: true
+            })
+          ]
+        })
 
     //生成文件顶部加入注释
     new webpack.BannerPlugin({
