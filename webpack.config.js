@@ -269,7 +269,7 @@ module.exports = merge(commonConfig, isProduction ? {
     }),
     
      // 图片自动压缩
-        new ImageminPlugin({
+     new ImageminPlugin({
           test: /\.(jpe?g|png|gif|svg)$/i,
           optipng: {
             optimizationLevel: 7
@@ -296,7 +296,7 @@ module.exports = merge(commonConfig, isProduction ? {
               progressive: true
             })
           ]
-        })
+    })
 
     //生成文件顶部加入注释
     new webpack.BannerPlugin({
