@@ -8,8 +8,6 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin'); //生成external
 const tsImportPluginFactory = require('ts-import-plugin'); //antd 按需加载
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const ImageminPlugin = require("imagemin-webpack-plugin").default;
-const imageminMozjpeg = require("imagemin-mozjpeg");
 
 const isProduction = process.argv.find(item => ~item.indexOf("--mode")).split("=").pop().toLowerCase() === "production";
 const fallBackStyleLoader = isProduction ? MiniCssExtractPlugin.loader : 'style-loader'
@@ -162,13 +160,44 @@ const commonConfig = {
           options: {
             limit: 8192,
             name: `${ASSETS_SUB_PATH}/images/[name].[hash:8].[ext]`,
-            publicPath: isProduction ? function (url) {
-              // return `cdn//` + url;
-              return url;
-            } : ''
+            fallback: {
+              loader: 'file-loader',
+              options: {
+                publicPath: function (url) {
+                  return (isProduction ? "http://images.cdn" + parseInt(Math.random() * (6 - 1 + 1) + 1, 10) + ".com/" : '') + url;
+                }
+              }
+            },
+
           }
-        }],
-        exclude: /^node_modules$/
+        }, {
+          // 图片自动压缩
+          loader: 'image-webpack-loader',
+          options: {
+            optipng: {
+              optimizationLevel: 7
+            },
+            pngquant: {
+              quality: "65-90",
+              speed: 4
+            },
+            mozjpeg: {
+              progressive: true,
+              quality: 65
+            },
+            gifsicle: {
+              optimizationLevel: 3,
+              interlaced: true,
+            },
+            svgo: {
+              removeViewBox: false,
+              removeEmptyAttrs: true
+            },
+            webp: {
+              quality: 75
+            }
+          }
+        }]
       },
       {
         test: /\.(ttf|otf|eot|svg|woff(2)?)(\?.*)?$/,
@@ -265,7 +294,10 @@ const getConfig = () => {
             sourceMap: false,
             uglifyOptions: {
               compress: {
-                inline: false
+                inline: true,
+                warnings: true,
+                drop_console: true,
+                drop_debugger: true
               }
             }
           })
@@ -308,40 +340,10 @@ const getConfig = () => {
           context: __dirname,
           debug: false
         }),
-        
+
         // cdn依赖加载
         new HtmlWebpackExternalsPlugin({
           externals
-        }),
-
-        // 图片自动压缩
-        new ImageminPlugin({
-          test: /\.(jpe?g|png|gif|svg)$/i,
-          optipng: {
-            optimizationLevel: 7
-          },
-          pngquant: {
-            quality: "65-90",
-            speed: 4
-          },
-          gifsicle: {
-            optimizationLevel: 3
-          },
-          svgo: {
-            plugins: [{
-              removeViewBox: false,
-              removeEmptyAttrs: true
-            }]
-          },
-          jpegtran: {
-            progressive: true
-          },
-          plugins: [
-            imageminMozjpeg({
-              quality: 65,
-              progressive: true
-            })
-          ]
         }),
 
         //生成文件顶部加入注释
