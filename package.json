@@ -7,7 +7,7 @@
     "start": "npm run dev",
     "dev": "./node_modules/.bin/webpack-dev-server --mode=development --color",
     "build": "./node_modules/.bin/webpack --mode=production --color",
-    "test": "./node_modules/.bin/jest --config jest.config.json"
+    "test": "./node_modules/.bin/jest --config jest.config.json --env=node"
   },
   "author": "",
   "license": "ISC",
@@ -61,7 +61,8 @@
     "webpack-bundle-analyzer": "^2.13.1",
     "webpack-cli": "^3.0.1",
     "webpack-dev-server": "^3.1.4",
-    "webpack-merge": "^4.1.2"
+    "webpack-merge": "^4.1.2",
+    "image-webpack-laoder: "4.6.0"
   },
   "dependencies": {
     "antd": "^3.6.1",

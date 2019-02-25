@@ -10,7 +10,7 @@ const tsImportPluginFactory = require('ts-import-plugin'); //antd 按需加载
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 
 const isProduction = process.argv.find(item => ~item.indexOf("--mode")).split("=").pop().toLowerCase() === "production";
-const fallBackStyleLoader = isProduction ?   MiniCssExtractPlugin.loader : 'style-loader'
+const fallBackStyleLoader = isProduction ? MiniCssExtractPlugin.loader : 'style-loader'
 
 const ROOT_PATH = path.resolve(__dirname);
 const APP_PATH = path.resolve(ROOT_PATH, "src");
@@ -90,7 +90,7 @@ const commonConfig = {
               useCache: false,
               useBable: false,
               getCustomTransformers: () => ({
-                before: [ tsImportPluginFactory({
+                before: [tsImportPluginFactory({
                   libraryDirectory: 'lib',
                   libraryName: 'antd',
                   style: 'css'
@@ -100,7 +100,7 @@ const commonConfig = {
                 module: 'ESNext'
               }
             }
-          }, 
+          },
           "tslint-loader"
         ]
       },
@@ -108,40 +108,40 @@ const commonConfig = {
         test: /\.css$/,
         exclude: /node_modules/,
         use: [
-            fallBackStyleLoader,
-            {
-              loader: 'typings-for-css-modules-loader',
-              options: {
-                importLoaders: 1,
-                modules: true,
-                camelCase: true,
-                namedExport: true,
-                localIdentName: '[name]__[local]--[hash:base64:5]',
-                sourceMap: true
-              }
-            },
-            'postcss-loader'
-          ]
+          fallBackStyleLoader,
+          {
+            loader: 'typings-for-css-modules-loader',
+            options: {
+              importLoaders: 1,
+              modules: true,
+              camelCase: true,
+              namedExport: true,
+              localIdentName: '[name]__[local]--[hash:base64:5]',
+              sourceMap: true
+            }
+          },
+          'postcss-loader'
+        ]
       },
       {
         test: /\.less$/,
         exclude: /node_modules/,
         use: [
-            fallBackStyleLoader,
-            {
-              loader: 'typings-for-css-modules-loader',
-              options: {
-                importLoaders: 1,
-                modules: true,
-                camelCase: true,
-                namedExport: true,
-                localIdentName: '[name]__[local]--[hash:base64:5]',
-                sourceMap: true
-              }
-            },
-            'postcss-loader',
-            'less-loader'
-          ]
+          fallBackStyleLoader,
+          {
+            loader: 'typings-for-css-modules-loader',
+            options: {
+              importLoaders: 1,
+              modules: true,
+              camelCase: true,
+              namedExport: true,
+              localIdentName: '[name]__[local]--[hash:base64:5]',
+              sourceMap: true
+            }
+          },
+          'postcss-loader',
+          'less-loader'
+        ]
       },
       {
         test: /\.css$/,
@@ -159,7 +159,16 @@ const commonConfig = {
           loader: "url-loader",
           options: {
             limit: 8192,
-            name: `${ASSETS_SUB_PATH}/images/[name].[hash:8].[ext]`
+            name: `${ASSETS_SUB_PATH}/images/[name].[hash:8].[ext]`,
+            fallback: {
+              loader: 'file-loader',
+              options: {
+                publicPath: function (url) {
+                  return (isProduction ? "http://images.cdn" + parseInt(Math.random() * (6 - 1 + 1) + 1, 10) + ".com/" : '') + url;
+                }
+              }
+            },
+
           }
         },  {
           // 图片自动压缩
@@ -201,8 +210,26 @@ const commonConfig = {
         use: [{
           loader: "file-loader",
           options: {
-            limit: 1000000,
-            name: `${ASSETS_SUB_PATH}/fonts/[name].[hash:5].[ext]`
+            limit: 8192,
+            name: `${ASSETS_SUB_PATH}/fonts/[name].[hash:5].[ext]`,
+            publicPath: isProduction ? function (url) {
+              // return `cdn//` + url;
+              return url;
+            } : ''
+          }
+        }]
+      },
+      {
+        test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+        use: [{
+          loader: "url-loader",
+          options: {
+            limit: 8192,
+            name: `${ASSETS_SUB_PATH}/media/[name].[hash:5].[ext]`,
+            publicPath: isProduction ? function (url) {
+              // return `cdn//` + url;
+              return url;
+            } : ''
           }
         }]
       },
@@ -230,115 +257,125 @@ const commonConfig = {
       favicon: FAVICON_PATH,
       inject: true
     }),
+  ],
 
-  ]
+  devtool: "source-map",
+  devServer: {
+    proxy: {
+      "/api": {
+        target: PROXY_URI,
+        changeOrigin: true
+      }
+    },
+    port: 8000,
+    disableHostCheck: true,
+    allowedHosts: [],
+    compress: true,
+    historyApiFallback: true,
+    hot: true,
+    https: false,
+    noInfo: false,
+    open: true,
+    clientLogLevel: "none",
+    watchOptions: {
+      poll: true
+    }
+  }
 }
 
-module.exports = merge(commonConfig, isProduction ? {
-  devtool: 'none',
+const getConfig = () => {
+  if (isProduction) {
+    return {
+      devtool: 'none',
 
-  output: {
-    filename: `${ASSETS_SUB_PATH}/js/${commonConfig.output.filename}`,
-    chunkFilename: `${ASSETS_SUB_PATH}/js/[name].[hash].js`
-  },
-
-  //文件压缩
-  optimization: {
-    minimizer: [
-      new UglifyJSPlugin({
-        sourceMap: false,
-        uglifyOptions: {
-          compress: {
-            inline: false
-          }
-        }
-      })
-    ],
-    splitChunks: {
-      cacheGroups: {
-        default: false,
-        commons: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'commons',
-          chunks: 'all',
-          minChunks: 2 
-        }
-      }
-    },
-    runtimeChunk: false,
-    // runtimeChunk: {
-    //   name: "runtime"
-    // }
-  },
-
-
-  externals: externals.reduce((prev, item) => {
-    prev[item.module] = item.global;
-    return prev;
-  }, {}),
-
-  //插件项
-  plugins: [
-    new webpack.optimize.ModuleConcatenationPlugin(),
-
-    //CSS文件单独打包
-    new MiniCssExtractPlugin({
-      filename: `${ASSETS_SUB_PATH}/css/[name].[hash:5].css`,
-      chunkFilename: `${ASSETS_SUB_PATH}/css/'[name].[hash].css`
-    }),
-
-    //加载器最小化
-    new webpack.LoaderOptionsPlugin({
-      minimize: true,
-      context: __dirname,
-      debug: false
-    }),
-
-     new HtmlWebpackExternalsPlugin({
-      externals
-    }),
-
-    //生成文件顶部加入注释
-    new webpack.BannerPlugin({
-      banner: "This file is created by Stephen Wu, " + new Date(),
-      raw: false,
-      entryOnly: true
-    }),
-
-    new BundleAnalyzerPlugin({
-      analyzerMode: 'static',
-      reportFilename: `${BUILD_PATH}/bundle.report.html`,
-      openAnalyzer: false
-    })
-  ]
-
-} : {
-    devtool: "source-map",
-    devServer: {
-      proxy: {
-        "/api": {
-          target: PROXY_URI,
-          changeOrigin: true
-        }
+      output: {
+        filename: `${ASSETS_SUB_PATH}/js/${commonConfig.output.filename}`,
+        chunkFilename: `${ASSETS_SUB_PATH}/js/[name].[hash].js`
       },
-      port: 8000,
-      disableHostCheck: true,
-      allowedHosts: [],
-      compress: true,
-      historyApiFallback: true,
-      hot: true,
-      https: false,
-      noInfo: false,
-      open: true,
-      clientLogLevel: "none",
-      watchOptions: {
-        poll: true
-      }
-    },
 
-    //插件项
-    plugins: [
-      new webpack.HotModuleReplacementPlugin(),
-      new webpack.NoEmitOnErrorsPlugin()
-    ]
-  });
+      //文件压缩
+      optimization: {
+        minimizer: [
+          new UglifyJSPlugin({
+            sourceMap: false,
+            uglifyOptions: {
+              compress: {
+                inline: true,
+                warnings: true,
+                drop_console: true,
+                drop_debugger: true
+              }
+            }
+          })
+        ],
+        splitChunks: {
+          cacheGroups: {
+            default: false,
+            commons: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'commons',
+              chunks: 'all',
+              minChunks: 2
+            }
+          }
+        },
+        runtimeChunk: false,
+        // runtimeChunk: {
+        //   name: "runtime"
+        // }
+      },
+
+      externals: externals.reduce((prev, item) => {
+        prev[item.module] = item.global;
+        return prev;
+      }, {}),
+
+      //插件项
+      plugins: [
+        new webpack.optimize.ModuleConcatenationPlugin(),
+
+        //CSS文件单独打包
+        new MiniCssExtractPlugin({
+          filename: `${ASSETS_SUB_PATH}/css/[name].[hash:5].css`,
+          chunkFilename: `${ASSETS_SUB_PATH}/css/'[name].[hash].css`
+        }),
+
+        //加载器最小化
+        new webpack.LoaderOptionsPlugin({
+          minimize: true,
+          context: __dirname,
+          debug: false
+        }),
+
+        // cdn依赖加载
+        new HtmlWebpackExternalsPlugin({
+          externals
+        }),
+
+        //生成文件顶部加入注释
+        new webpack.BannerPlugin({
+          banner: "This file is created by John Ng, " + new Date(),
+          raw: false,
+          entryOnly: true
+        }),
+
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          reportFilename: `${BUILD_PATH}/bundle.report.html`,
+          openAnalyzer: false
+        })
+      ]
+
+    }
+  } else {
+    return {
+      //插件项
+      plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NoEmitOnErrorsPlugin()
+      ]
+    }
+  }
+}
+
+module.exports = merge(commonConfig, getConfig());
