@@ -154,15 +154,47 @@ const commonConfig = {
         use: [fallBackStyleLoader, 'css-loader', 'postcss-loader', 'less-loader']
       },
       {
-        test: /\.(png|jpg|gif|jpeg|svg)$/,
-        use: [{
+        test: /\.(png|jpg|gif|jpeg|svg|webp)$/,
+        use: isProduction ? [{
           loader: "url-loader",
           options: {
             limit: 8192,
             name: `${ASSETS_SUB_PATH}/images/[name].[hash:8].[ext]`
           }
+        },  {
+          // 图片自动压缩
+          loader: 'image-webpack-loader',
+          options: {
+            optipng: {
+              optimizationLevel: 7
+            },
+            pngquant: {
+              quality: "65-90",
+              speed: 4
+            },
+            mozjpeg: {
+              progressive: true,
+              quality: 65
+            },
+            gifsicle: {
+              optimizationLevel: 3,
+              interlaced: true,
+            },
+            svgo: {
+              removeViewBox: false,
+              removeEmptyAttrs: true
+            },
+            webp: {
+              quality: 75
+            }
+          }
+        }] : [{
+            loader: "url-loader",
+            options: {
+              limit: 8192,
+              name: `${ASSETS_SUB_PATH}/images/[name].[hash:8].[ext]`
+            }
         }],
-        exclude: /^node_modules$/
       },
       {
         test: /\.(ttf|otf|eot|svg|woff(2)?)(\?.*)?$/,

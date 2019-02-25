@@ -35,6 +35,7 @@
     "html-webpack-externals-plugin": "^3.8.0",
     "html-webpack-plugin": "^3.2.0",
     "identity-obj-proxy": "^3.0.0",
+    "image-webpack-loader": "^4.6.0",
     "jest": "^23.1.0",
     "jest-cli": "^23.1.0",
     "jest-config": "^23.1.0",
