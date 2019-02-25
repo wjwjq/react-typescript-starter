@@ -20,7 +20,7 @@ Trace:
       at Generator.next (<anonymous>)
       at step (C:\Program Files (x86)\Yarn\lib\cli.js:98:30)
       at C:\Program Files (x86)\Yarn\lib\cli.js:109:13
-
+aaa
 npm manifest: 
   {
     "name": "manage",
